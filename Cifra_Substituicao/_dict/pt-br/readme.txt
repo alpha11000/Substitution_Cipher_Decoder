@@ -1,0 +1,1 @@
+O arquivo contendo as palavras em português com acentos foi retirado do repositório: https://github.com/AlfredoFilho/Palavras_PT-BR

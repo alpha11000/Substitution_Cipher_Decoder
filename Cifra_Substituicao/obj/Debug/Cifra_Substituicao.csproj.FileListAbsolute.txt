@@ -1,0 +1,8 @@
+C:\Users\Cliente\source\repos\Cifra_Substituicao\Cifra_Substituicao\bin\Debug\Cifra_Substituicao.exe.config
+C:\Users\Cliente\source\repos\Cifra_Substituicao\Cifra_Substituicao\bin\Debug\Cifra_Substituicao.exe
+C:\Users\Cliente\source\repos\Cifra_Substituicao\Cifra_Substituicao\bin\Debug\Cifra_Substituicao.pdb
+C:\Users\Cliente\source\repos\Cifra_Substituicao\Cifra_Substituicao\obj\Debug\Cifra_Substituicao.csproj.AssemblyReference.cache
+C:\Users\Cliente\source\repos\Cifra_Substituicao\Cifra_Substituicao\obj\Debug\Cifra_Substituicao.csproj.SuggestedBindingRedirects.cache
+C:\Users\Cliente\source\repos\Cifra_Substituicao\Cifra_Substituicao\obj\Debug\Cifra_Substituicao.csproj.CoreCompileInputs.cache
+C:\Users\Cliente\source\repos\Cifra_Substituicao\Cifra_Substituicao\obj\Debug\Cifra_Substituicao.exe
+C:\Users\Cliente\source\repos\Cifra_Substituicao\Cifra_Substituicao\obj\Debug\Cifra_Substituicao.pdb

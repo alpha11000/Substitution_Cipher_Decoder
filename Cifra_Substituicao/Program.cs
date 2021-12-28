@@ -25,7 +25,7 @@ namespace Cifra_Substituicao
             rw.addVariousReferences(fil);
 
             string fileTextName = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
-            fileTextName += "/_testFiles/Caesar/co0.txt";
+            fileTextName += "/_testFiles/Caesar/cod6.txt";
 
             string[] words = FileUtil.openTextFile(fileTextName);
             

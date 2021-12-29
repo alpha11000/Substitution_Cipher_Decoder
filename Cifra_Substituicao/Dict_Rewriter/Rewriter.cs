@@ -9,12 +9,31 @@ namespace Dict_Rewrite
         private Dictionary<string, referenceCode> references = new Dictionary<string, referenceCode>();
         private int wordsCount = 0;
 
-        public void setReferences(string[] _dict)
+        public void setReferencesFromString(string[] _dict)
         {
             string lastValue = "";
 
-            foreach(string word in _dict)
+            int i = 0;
+            int s = _dict.GetLength(0);
+            int percent = 0;
+            int lastPercent = -1;
+
+            Console.WriteLine();
+
+            foreach (string word in _dict)
             {
+                i++;
+
+                percent = calculatePercentage(i, s);
+
+
+                if (percent != lastPercent)
+                {
+                    Console.SetCursorPosition(0, Console.CursorTop - 1);
+                    Console.WriteLine(percent.ToString() + " %");
+                    lastPercent = percent;
+                }
+
                 if (word.Contains("#"))
                 {
                     string value = word.Substring(1);

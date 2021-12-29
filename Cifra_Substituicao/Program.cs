@@ -8,24 +8,55 @@ namespace Cifra_Substituicao
     {
         static void Main(string[] args)
         {
-            string csvName = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
-            csvName += "/_dict/pt-br/_freq/mostFreqMod.txt";
-
-            string[] mostFreqWords = FileUtil.openDictFile(csvName);
-
-
-            string fileName = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
-            fileName += "/_dict/pt-br/br-com-acentos.txt";
-            string[] fil = FileUtil.openDictFile(fileName);
-
             Rewriter rw = new Rewriter();
-            Console.WriteLine("Inserindo dicionário de maior frequencia...");
-            rw.addVariousReferences(mostFreqWords);
-            Console.WriteLine("Inserindo dicionário com todas as palavras...");
-            rw.addVariousReferences(fil);
+            string dir = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
+            string refDictFileName = dir + "/_dict/pt-br/br_com_acentos_ref_dict.txt";
 
-            string fileTextName = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
-            fileTextName += "/_testFiles/Caesar/cod6.txt";
+            string[] refDict = FileUtil.openDictFile(refDictFileName);
+
+            if(refDict.Length == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Red; ;
+                Console.WriteLine("Não foi encontrado um dicionário de referencias.");
+                Console.ResetColor();
+
+
+                Console.WriteLine("Importando arquivos...");
+
+                string mostFreqDictName = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
+                mostFreqDictName += "/_dict/pt-br/_freq/mostFreqMod.txt";
+
+                string[] mostFreqWords = FileUtil.openDictFile(mostFreqDictName);
+
+
+                string fileName = dir + "/_dict/pt-br/br-com-acentos.txt";
+                string[] fil = FileUtil.openDictFile(fileName);
+
+
+                Console.WriteLine("Gerando referencias a partir das palavras mais frequentes...");
+                rw.addVariousReferences(mostFreqWords);
+                Console.WriteLine("Gerando referencias a partir do dicionário completo...");
+                rw.addVariousReferences(fil);
+
+                Console.WriteLine("Gerando dicionário de frequencia e salvando...");
+                FileUtil.writeToFile(refDictFileName, rw.getStructuredString());
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Salvo com sucesso.");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Dicionário de frequência encontrado. Importando-o...");
+                Console.ResetColor();
+                
+                rw.setReferencesFromString(refDict);
+            }
+
+            
+
+            string fileTextName = dir +  "/_testFiles/Caesar/cod6.txt";
 
             string[] words = FileUtil.openTextFile(fileTextName);
             

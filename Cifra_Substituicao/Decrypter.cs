@@ -211,6 +211,7 @@ namespace Cifra_Substituicao
                 if(nextDict == null)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
+                    Console.BackgroundColor = ConsoleColor.Gray;
                     Console.WriteLine("Falha em -> " + word);
                     Console.ResetColor();
                     continue;

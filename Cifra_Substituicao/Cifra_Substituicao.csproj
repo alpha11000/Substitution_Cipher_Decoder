@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleUtil.cs" />
     <Compile Include="Decrypter.cs" />
     <Compile Include="Dict_Rewriter\FileUtil.cs" />
     <Compile Include="Dict_Rewriter\referenceCode.cs" />

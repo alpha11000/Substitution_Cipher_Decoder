@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Dict_Rewrite;
 
@@ -6,8 +7,84 @@ namespace Cifra_Substituicao
 {
     internal class Program
     {
+       /* static void Main(string[] args)
+        {
+            Rewriter rw = new Rewriter();
+
+            string dir = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
+            string refDictFileName = dir + "/_dict/pt-br/br_com_acentos_ref_dict.txt";
+            string fileTextName = dir + "/TESTE.txt";
+
+
+            string[] refDict = FileUtil.openDictFile(refDictFileName);
+            rw.setReferencesFromString(refDict);
+
+            string[] words = FileUtil.openTextFile(fileTextName);
+            Console.WriteLine(words.Length);
+
+            Decrypter decrypter = new Decrypter(words, rw);
+
+            SortedDictionary<int, char[]> testeDict = new SortedDictionary<int, char[]>();
+            Dictionary<char, char> keys = new Dictionary<char, char>();
+
+            keys.Add('t', 't');
+            keys.Add('s', 's');
+
+            testeDict.Add(0, "teste".ToCharArray());
+            testeDict.Add(1, "tartaruga".ToCharArray());
+            List<char[]> dict = new List<char[]>();
+            List<char[]> similiar = new List<char[]>();
+
+            bool isValid;
+
+            SortedDictionary<int, char[]> sorted =  decrypter.sortByCorrespondences(testeDict, keys, -1, out similiar, out isValid);
+
+            foreach(var s in sorted)
+            {
+                Console.WriteLine(s.Key + " --> " + new string(s.Value) + " --> " + isValid);
+            }
+
+            Console.WriteLine("***********************");
+
+            keys.Add('a', 'a');
+            keys.Add('r', 'r');
+            keys.Add('g', 'g');
+
+            sorted = decrypter.sortByCorrespondences(testeDict, keys, -1, out similiar, out isValid);
+
+            foreach (var s in sorted)
+            {
+                Console.WriteLine(s.Key + " --> " + new string(s.Value) + " --> " + isValid);
+            }
+
+
+            Console.WriteLine("***********************");
+
+            sorted = decrypter.sortByCorrespondences(testeDict, keys, 0, out similiar, out isValid);
+
+            foreach (var s in sorted)
+            {
+                Console.WriteLine(s.Key + " --> " + new string(s.Value) + " --> " + isValid);
+            }
+
+
+            testeDict.Add(2, "tsts".ToCharArray());
+
+            Console.WriteLine("***********************");
+
+            sorted = decrypter.sortByCorrespondences(testeDict, keys, -1, out similiar, out isValid);
+
+            foreach (var s in sorted)
+            {
+                Console.WriteLine(s.Key + " --> " + new string(s.Value) + " --> " + isValid);
+            }
+
+        }*/
+
         static void Main(string[] args)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
             Rewriter rw = new Rewriter();
             string dir = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
             string refDictFileName = dir + "/_dict/pt-br/br_com_acentos_ref_dict.txt";
@@ -56,16 +133,20 @@ namespace Cifra_Substituicao
 
             
 
-            string fileTextName = dir +  "/_testFiles/Caesar/cod6.txt";
+            string fileTextName = dir +  "/_testFiles/Caesar/cod4.txt";
 
             string[] words = FileUtil.openTextFile(fileTextName);
             
 
             Decrypter decrypter = new Decrypter(words, rw);
 
+            watch.Start();
             string[] decrypted = decrypter.decrypt();
+            Console.WriteLine("Terminado em " + watch.Elapsed + " segundos.\n");
+            watch.Stop();
 
-            Console.WriteLine("Palavras descriptografadas:");
+            Console.BackgroundColor = ConsoleColor.Blue;
+            ConsoleUtil.printColoredMessage("Texto descriptografado:\n", ConsoleColor.Black);
 
             foreach(string s in decrypted)
             {

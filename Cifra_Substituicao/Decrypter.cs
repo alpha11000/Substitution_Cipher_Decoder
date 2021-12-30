@@ -8,7 +8,7 @@ namespace Cifra_Substituicao
     internal class Decrypter
     {
         List<string> original;
-        Dictionary<string, referenceCode> words = new Dictionary<string, referenceCode>(); //palavra // referencia
+        Dictionary<string, referenceCode> wordsOriginal = new Dictionary<string, referenceCode>(); //palavra // referencia
         SortedDictionary<int, List<string>> wordsOrder = new SortedDictionary<int, List<string>>(); //quantidade de semelhantes //palavra
         Rewriter rw;
 
@@ -23,12 +23,12 @@ namespace Cifra_Substituicao
 
                 //Console.WriteLine("+" + word);
 
-                if(this.words.ContainsKey(word))
+                if(this.wordsOriginal.ContainsKey(word))
                 {
                     continue;
                 }
 
-                this.words.Add(word, rC);
+                this.wordsOriginal.Add(word, rC);
 
                 if (wordsOrder.ContainsKey(rC.getCount()))
                 {
@@ -47,7 +47,7 @@ namespace Cifra_Substituicao
             {
                 foreach(string s in k.Value)
                 {
-                    Console.WriteLine(k.Key + " -- > " + s + " ===> " + words[s].getRefCode());
+                    Console.WriteLine(k.Key + " -- > " + s + " ===> " + wordsOriginal[s].getRefCode());
                 }
             }
         }
@@ -65,12 +65,13 @@ namespace Cifra_Substituicao
                 }
             }
 
-            List<char[]> charWords = desfragmentWords(wordsOrderList);
-           
-           // List<string> decryptedWords = new List<string>();
-           
-            Dictionary<char, char> keys = internalDecrypt(0, ref charWords, new Dictionary<char, char>());
+            //List<char[]> words = desfragmentWords(wordsOrderList); // para v1
+            SortedDictionary<int,char[]> words = getSortedDictionaryFromCharVector(desfragmentWords(wordsOrderList)); //para v2
 
+            // List<string> decryptedWords = new List<string>();
+
+            //Dictionary<char, char> keys = internalDecrypt(0, ref words, new Dictionary<char, char>()); // para V1
+            Dictionary<char, char> keys = internalDecryptV2(0, words, new Dictionary<char, char>(), new List<char[]>(), new List<int>(), words.Count - 1); // para V2
 
             List<int> i;
             string[] newText = new string[original.Count];
@@ -80,11 +81,16 @@ namespace Cifra_Substituicao
                 newText[x] = null;
             }
 
-            Console.WriteLine("Size of new Text = " + newText.Length);
-
             if(keys != null)
             {
-                foreach(char[] word in charWords)
+                Console.BackgroundColor = ConsoleColor.Green;
+                ConsoleUtil.printColoredMessage("\nChave descoberta com sucesso.\n", ConsoleColor.Black);
+                ConsoleUtil.printKeys(keys, ConsoleColor.Green);
+
+                ConsoleUtil.printColoredMessage("Aplicando chave ao texto criptografado...\n", ConsoleColor.Blue);
+
+                foreach(char[] word in words.Values) //para v2
+                //foreach(char[] word in words) para v1//
                 {
                     char[] decrypted = replaceLetters(word, keys, out i);
 
@@ -99,8 +105,6 @@ namespace Cifra_Substituicao
                         {
                             break;
                         }
-
-                        Console.WriteLine(new string(word) + " at index " + a);
 
                         if(newText[a] != null)
                         {
@@ -119,6 +123,205 @@ namespace Cifra_Substituicao
             return newText;
         }
 
+        private Dictionary<char,char> internalDecryptV2(int atualElement, SortedDictionary<int, char[]> words, Dictionary<char, char> key, List<char[]> similarWords, List<int> alteredPositions, int maxElement)
+        {
+
+            //if((words.Count <= 0) && atualElement != 0)
+            if(atualElement > maxElement)
+            {
+                ConsoleUtil.printColoredMessage("Last Element", ConsoleColor.Green, true);
+                return key;
+            }
+
+            char[] alteredWord = new char[0];
+
+            List<char[]> similarWordsAtual;
+            List<int> alteredPositionsAtual;
+
+
+            if (similarWords.Count <= 0)
+            {
+                referenceCode rC = wordsOriginal[new string (words.Values.ElementAt(atualElement))];
+                alteredPositionsAtual = new List<int>();
+                similarWordsAtual = rC.getElementsNEW();
+            }
+            else
+            {
+                similarWordsAtual = similarWords;
+                alteredPositionsAtual = alteredPositions;
+            }
+
+            foreach (char[] word in similarWordsAtual)
+            {
+                Dictionary<char, char> newDict = new Dictionary<char, char>(key);
+
+                ConsoleUtil.printColoredMessage("trying: " + new string(word), ConsoleColor.Magenta);
+
+                alteredWord = new char[word.Length];
+                word.CopyTo(alteredWord, 0);
+                int i = 0;
+                bool valido = true;
+
+                foreach (char c in alteredWord)
+                {
+                    if (newDict.ContainsValue(c) && !alteredPositionsAtual.Contains(i))
+                    {
+                        ConsoleUtil.printColoredMessage("Letra invalida: " + c, ConsoleColor.Red);
+                        valido = false;
+                        break;
+                    }
+                    i++;
+                }
+
+                if (valido == false)
+                {
+                    continue;
+                }
+
+
+                i = 0;
+
+                foreach (char letter in words.Values.ElementAt(atualElement))
+                {
+                    if (!newDict.ContainsKey(letter))
+                    {
+                        //caso a letra ñ já tenha sido modificada
+                        newDict.Add(letter, alteredWord[i]);
+                    }
+                    i++;
+                }
+
+                bool isValid = false;
+
+                List<char[]> nextSimilarWords = new List<char[]>();
+                List<int> nextAlteredPositions = new List<int>();
+
+                SortedDictionary<int, char[]> ordened = sortByCorrespondences(words, newDict, atualElement, 
+                    out nextSimilarWords, out nextAlteredPositions, out isValid);
+
+                if (!isValid)
+                {
+                    continue;
+                }
+
+                Dictionary<char, char> nextDict = internalDecryptV2(atualElement + 1, ordened, newDict, nextSimilarWords, nextAlteredPositions, maxElement);
+
+                if(nextDict != null)
+                {
+                    ConsoleUtil.printColoredMessage("Sucesso em: " + new string(word), ConsoleColor.Green);
+                    return nextDict;
+                }
+                else
+                {
+                    ConsoleUtil.printColoredMessage("Falha em: " + new string(word), ConsoleColor.Green);
+                    continue;
+                }
+
+            }
+
+            return null;
+        }
+
+        public static SortedDictionary<int, char[]> getSortedDictionaryFromCharVector(List<char[]> words)
+        {
+            SortedDictionary<int, char[]> sorted = new SortedDictionary<int, char[]>();
+            int i = 0;
+
+            foreach(char[] word in words)
+            {
+                sorted.Add(i, word);
+                i++;
+            }
+
+            return sorted;
+        }
+
+        public SortedDictionary<int, char[]> sortByCorrespondences(SortedDictionary<int, char[]> encWords, Dictionary<char, char> atualKey, int atualElement,out List<char[]> nextSimiliars, out List<int> nextAlteredPositions, out bool isValid){
+
+            SortedDictionary<int, List<char[]>> wordsSorted = new SortedDictionary<int, List<char[]>>();
+            wordsSorted.Add(-1, new List<char[]>()); //onde serão guardados os elementos passados
+            
+            int i = 0;
+            nextSimiliars = new List<char[]>();
+            nextAlteredPositions = new List<int>();
+
+            foreach(char[] word in encWords.Values)
+            {
+                //caso haja erro de modificar o vetor de char anterior
+                char[] atualWord = new char[word.Length];
+                word.CopyTo(atualWord, 0);
+
+                if (i <= atualElement)
+                {
+                    wordsSorted[-1].Add(word);
+                    i++;
+                    continue;
+                }
+
+                string wordStr = new string(word);
+
+                List<int> modifiedPositions = new List<int>();
+                char[] replacedWord = replaceLetters(atualWord, atualKey, out modifiedPositions);
+
+                referenceCode rC = wordsOriginal[wordStr];
+                List<char[]> correspondences;
+
+
+                if (modifiedPositions.Count <= 0)
+                {
+                    correspondences = rC.getElementsNEW();
+                }
+                else
+                {
+                    correspondences = rC.getSimiliarWordsNEW(replacedWord, modifiedPositions);
+                }
+
+
+
+                if(i == atualElement+1)
+                {
+                    nextSimiliars = correspondences;
+                    nextAlteredPositions = modifiedPositions;
+                }
+
+                if(correspondences.Count <= 0)
+                {
+                    ConsoleUtil.printColoredMessage(wordStr+ " " + i, ConsoleColor.Red);
+                    isValid = false;
+                    //return wordsSorted;
+                    return new SortedDictionary<int, char[]>();
+                }
+
+                if (wordsSorted.ContainsKey(correspondences.Count))
+                {
+                    wordsSorted[correspondences.Count].Add(word);
+                }
+                else
+                {
+                    wordsSorted.Add(correspondences.Count, new List<char[]> { word });
+                }
+                i++;
+
+            }
+
+            isValid = true;
+
+            //Mudar essa parte para algo com melhor desempenho
+            SortedDictionary<int, char[]> wordsSortedDict = new SortedDictionary<int, char[]>();
+            i = 0;
+
+            foreach(List<char[]> words in wordsSorted.Values)
+            {
+                foreach(char[] word in words)
+                {
+                    wordsSortedDict.Add(i++, word);
+                }
+            }
+
+            return wordsSortedDict;
+
+        }
+
         //se retornar null, passa para o proximo valor da palavra
         private Dictionary<char, char> internalDecrypt(int atualElement, ref List<char[]> charWords, Dictionary<char, char> lastDict)
         {
@@ -132,7 +335,7 @@ namespace Cifra_Substituicao
             string atualWord = new string(charWords[atualElement]);
             
 
-            referenceCode rC = words[atualWord];
+            referenceCode rC = wordsOriginal[atualWord];
             char[] wordChar = charWords[atualElement].ToArray();
 
             List<int> replacedPositions; //mudar para hash set? 
@@ -142,34 +345,32 @@ namespace Cifra_Substituicao
 
             char[] alteredWord = replaceLetters(wordChar, lastDict, out replacedPositions);
 
-            Console.Write("atualWord -> " + atualWord + " dec -> "); //********************************8
-            Console.WriteLine(alteredWord);/////**********************************************
+            //Console.Write("atualWord -> " + atualWord + " dec -> "); //********************************8
+            //Console.WriteLine(alteredWord);/////**********************************************
 
             string[] wordsFinded = (replacedPositions.Count() > 0) ?
                 rC.getSimiliarWords(new string(alteredWord), replacedPositions.ToArray()) :
                 rC.getElements().ToArray();
 
-            /*if (replacedPositions.Count() > 0 && wordsFinded.Count() <= 0 && replacedPositions.Count() < wordChar.Count())
+            if (replacedPositions.Count() > 0 && wordsFinded.Count() <= 0 && replacedPositions.Count() < wordChar.Count())
             {
                 Console.WriteLine("Retornou nulo");
                 return null;
-            }*/
+            }
 
             //verificar se todas as letras foram substituidas e tratar disto
 
-            Console.WriteLine("\nCorrespondências: ");
+           /* Console.WriteLine("\nCorrespondências: ");
             foreach (string word in wordsFinded)
             {
                 Console.WriteLine(word);
-            }
+            }*/
 
             foreach(string word in wordsFinded)
             {
                 Dictionary<char, char> newDictAtual = new Dictionary<char, char>(lastDict);
 
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine("triyng: " + word);
-                Console.ResetColor();
+                ConsoleUtil.printColoredMessage("Trying: " + word, ConsoleColor.Magenta);
                 alteredWord = word.ToCharArray();
 
                 int i = 0;
@@ -195,7 +396,6 @@ namespace Cifra_Substituicao
 
 
                 i = 0;
-                //o erro está por aqui
                 foreach(char letter in atualWord)
                 {
                     if (!newDictAtual.ContainsKey(letter))
@@ -210,17 +410,12 @@ namespace Cifra_Substituicao
 
                 if(nextDict == null)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.BackgroundColor = ConsoleColor.Gray;
-                    Console.WriteLine("Falha em -> " + word);
-                    Console.ResetColor();
+                    ConsoleUtil.printColoredMessage("Falha em: " + word, ConsoleColor.Red);
                     continue;
                 }
                 else
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("sucesso em -> " + word);
-                    Console.ResetColor();
+                    ConsoleUtil.printColoredMessage("Sucesso em: " + word, ConsoleColor.Green);
                     return nextDict;
                 }
             }
@@ -237,13 +432,13 @@ namespace Cifra_Substituicao
                 return new char[0];
             }
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
+            /*Console.ForegroundColor = ConsoleColor.Yellow;
             foreach(var k in toReplace)
             {
                 Console.Write("[" + k.Key + " -> " + k.Value + "]");
             }
             Console.WriteLine();
-            Console.ResetColor();
+            Console.ResetColor();*/
 
             char[] replaced = new char[original.Length];
             original.CopyTo(replaced, 0);
@@ -254,7 +449,7 @@ namespace Cifra_Substituicao
             {
                 if (toReplace.ContainsKey(letter))
                 {
-                    //Console.WriteLine(replaced[i] + " ====> " +  toReplace[letter]);
+                   // Console.WriteLine(replaced[i] + " ====> " +  toReplace[letter]);
 
                     replaced[i] = toReplace[letter];
                     changed.Add(i);
@@ -268,14 +463,14 @@ namespace Cifra_Substituicao
                 i++;
             }
 
-            Console.ForegroundColor = ConsoleColor.Blue;
+            /*Console.ForegroundColor = ConsoleColor.Blue;
             Console.Write("{");
             foreach(int n in changed)
             {
                 Console.Write(n + ", ");
             }
             Console.WriteLine("}");
-            Console.ResetColor();
+            Console.ResetColor();*/
 
             positionsReplaced = changed;
 

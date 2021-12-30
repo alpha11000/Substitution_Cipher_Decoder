@@ -27,6 +27,19 @@ namespace Dict_Rewrite
             return words; 
         }
 
+
+        public List<char[]> getElementsNEW()
+        {
+            List<char[]> words = new List<char[]>();
+
+            foreach(string s in wordList)
+            {
+                words.Add(s.ToArray());
+            }
+
+            return words;
+        }
+
         public string getRefCode()
         {
             return refCode; ;
@@ -47,6 +60,7 @@ namespace Dict_Rewrite
             return wordList.Count;
         }
 
+        //REMOVER 
         public string[] getSimiliarWords(string word, int[] positionsToCompare)
         {
             List<string> similiarWords = new List<string>();
@@ -73,6 +87,34 @@ namespace Dict_Rewrite
             }
 
             return similiarWords.ToArray();
+        }
+
+        //RENAME
+        public List<char[]> getSimiliarWordsNEW(char[] word, List<int> positionsToCompare)
+        {
+            List<char[]> similiarWords = new List<char[]>();
+            char[] atualWord;
+
+            foreach (string w in wordList)
+            {
+                bool isSimiliar = true;
+                atualWord = w.ToCharArray();
+
+                foreach (int i in positionsToCompare)
+                {
+                    if (atualWord[i].CompareTo(word[i]) != 0)
+                    {
+                        isSimiliar = false;
+                    }
+                }
+
+                if (isSimiliar)
+                {
+                    similiarWords.Add(w.ToCharArray());
+                }
+            }
+
+            return similiarWords;
         }
     }
 }

@@ -57,9 +57,9 @@ namespace Cifra_Substituicao
                 rw.setReferencesFromString(refDict);
             }
 
-            
 
-            string fileTextName = dir +  "/_testFiles/Caesar/cod6.txt";
+            Console.WriteLine("Digite o caminho para o arquivo que deseja descriptografar. (Ex:  /_testFiles/Caesar/cod6.txt)");
+            string fileTextName = dir +  Console.ReadLine();
 
             string[] words = FileUtil.openTextFile(fileTextName);
 

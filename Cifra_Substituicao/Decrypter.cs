@@ -186,7 +186,14 @@ namespace Cifra_Substituicao
                     if (!newDict.ContainsKey(letter))
                     {
                         //caso a letra ñ já tenha sido modificada
-                        newDict.Add(letter, alteredWord[i]);
+                        try { 
+                           newDict.Add(letter, alteredWord[i]);
+                        }catch(Exception e)
+                        {
+                            ConsoleUtil.printColoredMessage("\t\tERRO FATAL EM 193 -> " + new string(alteredWord) + " pos -> " + i +
+                                "\n \t\toriginal word: " + new string(words.Values.ElementAt(atualElement))+
+                                " similiar: " + new string(word), ConsoleColor.Red);
+                        }
                     }
                     i++;
                 }
@@ -213,7 +220,7 @@ namespace Cifra_Substituicao
                 }
                 else
                 {
-                    ConsoleUtil.printColoredMessage("Falha em: " + new string(word), ConsoleColor.Green);
+                    ConsoleUtil.printColoredMessage("Falha em: " + new string(word), ConsoleColor.Red);
                     continue;
                 }
 
@@ -221,6 +228,7 @@ namespace Cifra_Substituicao
 
             return null;
         }
+
 
         public static SortedDictionary<int, char[]> getSortedDictionaryFromCharVector(List<char[]> words)
         {
@@ -266,7 +274,7 @@ namespace Cifra_Substituicao
                 referenceCode rC = wordsOriginal[wordStr];
                 List<char[]> correspondences;
 
-
+                
                 if (modifiedPositions.Count <= 0)
                 {
                     correspondences = rC.getElementsNEW();
@@ -278,15 +286,9 @@ namespace Cifra_Substituicao
 
 
 
-                if(i == atualElement+1)
-                {
-                    nextSimiliars = correspondences;
-                    nextAlteredPositions = modifiedPositions;
-                }
-
                 if(correspondences.Count <= 0)
                 {
-                    ConsoleUtil.printColoredMessage(wordStr+ " " + i, ConsoleColor.Red);
+                    //ConsoleUtil.printColoredMessage(wordStr+ " " + i, ConsoleColor.Red);
                     isValid = false;
                     //return wordsSorted;
                     return new SortedDictionary<int, char[]>();
@@ -300,6 +302,29 @@ namespace Cifra_Substituicao
                 {
                     wordsSorted.Add(correspondences.Count, new List<char[]> { word });
                 }
+
+                if(wordsSorted.Keys.ElementAt(1) == correspondences.Count)
+                {
+                    if(wordsSorted[correspondences.Count].Count == 1)
+                    {
+                        nextSimiliars = correspondences;
+                        nextAlteredPositions = modifiedPositions;
+                    }
+                }
+
+
+                //A similiar só pode ser passada depois que todos os elementos já estão atribuidos
+                /*if (wordsSorted.Count >= atualElement+3 && wordsSorted.Keys.ElementAt(atualElement+2) == correspondences.Count)
+                {
+
+                    if (wordsSorted[correspondences.Count].Count == 1)
+                    {
+                        nextSimiliars = correspondences;
+                        nextAlteredPositions = modifiedPositions;
+                    }
+
+                }*/
+
                 i++;
 
             }

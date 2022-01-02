@@ -12,27 +12,26 @@ namespace Cifra_Substituicao
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            Rewriter rw = new Rewriter();
+            Rewriter rw = new Rewriter(); //Gerenciará os dicionários e os códigos referentes às palavras
+
             string dir = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
-
-            string[] refDict;
-
             string dictDirectory = dir + "/_dict_files/";
-
-            string[] dicts = Directory.GetDirectories(dictDirectory);
-            string folderName;
-
+            //string testsDirectory = dir + "/_tests/";
+            
+            string[] dicts = Directory.GetDirectories(dictDirectory); //todos os dicionários presentes na pasta de dicionários
+            string currentDictFolder; //pasta do dicionario escolhido pelo usuário
+            
+            //Escolha do dicionário a ser utilizado
             Console.WriteLine("Qual dicionário você deseja utilizar?");
 
             for(int i = 0; i < dicts.Length; i++)
             {
-                folderName = dicts[i].Substring(dicts[i].LastIndexOf('/') + 1);
+                currentDictFolder = dicts[i].Substring(dicts[i].LastIndexOf('/') + 1);
 
-                ConsoleUtil.printColoredMessage((i+1) + "- " + folderName, ConsoleColor.Yellow);
+                ConsoleUtil.printColoredMessage((i+1) + "- " + currentDictFolder, ConsoleColor.Yellow);
             }
 
-            int choice = 0;
-            
+            int choice; //indice do dicionário escolhido pelo usuário
 
             while (true)
             {
@@ -49,38 +48,44 @@ namespace Cifra_Substituicao
                 break;
             }
 
-            folderName = dicts[choice - 1].Substring(dicts[choice - 1].LastIndexOf('/') + 1);
+            currentDictFolder = dicts[choice - 1].Substring(dicts[choice - 1].LastIndexOf('/') + 1);
 
             string dict = dicts[choice - 1];
+            string totalWordsFileNAme = dict + "/" + currentDictFolder + "-words.txt";
+            string freqDictName = dict + "/_freq/" + currentDictFolder + "-freq.txt";
+            string refDictName = dict + "/" + currentDictFolder + "-ref.txt";
 
-            refDict = FileUtil.openDictFile(dict + "/" + folderName);
+            string[] refDict = FileUtil.openDictFile(refDictName);
 
             if (refDict.Length == 0)
             {
-                Console.ForegroundColor = ConsoleColor.Red; ;
+                if(Directory.GetFiles(dict).Length == 1)
+                {
+                    totalWordsFileNAme = Directory.GetFiles(dict)[0];
+                    ConsoleUtil.printColoredMessage($"Importando a partir de: {totalWordsFileNAme}", ConsoleColor.Yellow);
+                }
+
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Não foi encontrado um dicionário de referências.");
                 Console.ResetColor();
 
 
                 Console.WriteLine("Importando arquivos...");
 
-                string mostFreqDictName = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
-                mostFreqDictName += "/_dict/pt-br/_freq/mostFreqMod.txt";
+                //string mostFreqDictName = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
+                //mostFreqDictName += "/_dict/pt-br/_freq/mostFreqMod.txt";
 
-                string[] mostFreqWords = FileUtil.openDictFile(mostFreqDictName);
-
-
-                string fileName = dir + "/_dict/pt-br/br-com-acentos.txt";
-                string[] fil = FileUtil.openDictFile(fileName);
+                string[] mostFreqWords = FileUtil.openDictFile(freqDictName);
+                string[] totalWordsFile = FileUtil.openDictFile(totalWordsFileNAme);
 
 
                 Console.WriteLine("Gerando referencias a partir das palavras mais frequentes...");
                 rw.addVariousReferences(mostFreqWords);
                 Console.WriteLine("Gerando referencias a partir do dicionário completo...");
-                rw.addVariousReferences(fil);
+                rw.addVariousReferences(totalWordsFile);
 
                 Console.WriteLine("Gerando dicionário de referências e salvando...");
-                FileUtil.writeToFile(dict  + "/" + folderName + "-ref.txt", rw.getStructuredString());
+                FileUtil.writeToFile(refDictName, rw.getStructuredString());
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Salvo com sucesso.");
@@ -99,12 +104,13 @@ namespace Cifra_Substituicao
             Console.WriteLine("Digite o caminho para o arquivo que deseja descriptografar. (Ex:  /_testFiles/Caesar/cod6.txt)");
             string fileTextName = dir +  Console.ReadLine();
 
-            string[] words = FileUtil.openTextFile(fileTextName);
+            string[] fileText = FileUtil.openTextFile(fileTextName);
 
             ConsoleUtil.printColoredMessage("\nIniciando descriptografia...\n", ConsoleColor.Green);
 
-            Decrypter decrypter = new Decrypter(words, rw);
+            Decrypter decrypter = new Decrypter(fileText, rw);
 
+            watch.Reset();
             watch.Start();
             string[] decrypted = decrypter.decrypt();
             Console.WriteLine("Terminado em " + watch.Elapsed + " segundos.\n");

@@ -21,14 +21,17 @@ namespace Cifra_Substituicao
             {
                 referenceCode rC =  rw.findReferenceByCode(Rewriter.toStructWord(word));
 
-                //Console.WriteLine("+" + word);
-
                 if(this.wordsOriginal.ContainsKey(word))
                 {
                     continue;
                 }
 
                 this.wordsOriginal.Add(word, rC);
+
+                if(rC == null)
+                {
+                    continue;
+                }
 
                 if (wordsOrder.ContainsKey(rC.getCount()))
                 {
@@ -155,7 +158,7 @@ namespace Cifra_Substituicao
             {
                 Dictionary<char, char> newDict = new Dictionary<char, char>(key);
 
-                ConsoleUtil.printColoredMessage("trying: " + new string(word), ConsoleColor.Magenta);
+                ConsoleUtil.printColoredMessage("tentando: " + new string(word), ConsoleColor.Magenta);
 
                 alteredWord = new char[word.Length];
                 word.CopyTo(alteredWord, 0);
@@ -208,6 +211,7 @@ namespace Cifra_Substituicao
 
                 if (!isValid)
                 {
+                  //  ConsoleUtil.printColoredMessage("OKAY", ConsoleColor.Green);
                     continue;
                 }
 
@@ -225,7 +229,7 @@ namespace Cifra_Substituicao
                 }
 
             }
-
+            ConsoleUtil.printColoredMessage("INVÁLIDO", ConsoleColor.Red);
             return null;
         }
 

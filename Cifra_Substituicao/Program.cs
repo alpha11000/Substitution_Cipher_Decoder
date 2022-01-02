@@ -9,15 +9,53 @@ namespace Cifra_Substituicao
     {
         static void Main(string[] args)
         {
+
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
             Rewriter rw = new Rewriter();
             string dir = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
-            string refDictFileName = dir + "/_dict/pt-br/br_com_acentos_ref_dict.txt";
 
-            string[] refDict = FileUtil.openDictFile(refDictFileName);
+            string[] refDict;
 
-            if(refDict.Length == 0)
+            string dictDirectory = dir + "/_dict_files/";
+
+            string[] dicts = Directory.GetDirectories(dictDirectory);
+            string folderName;
+
+            Console.WriteLine("Qual dicionário você deseja utilizar?");
+
+            for(int i = 0; i < dicts.Length; i++)
+            {
+                folderName = dicts[i].Substring(dicts[i].LastIndexOf('/') + 1);
+
+                ConsoleUtil.printColoredMessage((i+1) + "- " + folderName, ConsoleColor.Yellow);
+            }
+
+            int choice = 0;
+            
+
+            while (true)
+            {
+                Console.Write("Sua escolha: ");
+                choice = int.Parse(Console.ReadLine());
+
+
+                if(choice > dicts.Length || choice < 1)
+                {
+                    ConsoleUtil.printColoredMessage("Escolha Inválida", ConsoleColor.Red);
+                    continue;
+                }
+
+                break;
+            }
+
+            folderName = dicts[choice - 1].Substring(dicts[choice - 1].LastIndexOf('/') + 1);
+
+            string dict = dicts[choice - 1];
+
+            refDict = FileUtil.openDictFile(dict + "/" + folderName);
+
+            if (refDict.Length == 0)
             {
                 Console.ForegroundColor = ConsoleColor.Red; ;
                 Console.WriteLine("Não foi encontrado um dicionário de referências.");
@@ -42,7 +80,7 @@ namespace Cifra_Substituicao
                 rw.addVariousReferences(fil);
 
                 Console.WriteLine("Gerando dicionário de referências e salvando...");
-                FileUtil.writeToFile(refDictFileName, rw.getStructuredString());
+                FileUtil.writeToFile(dict  + "/" + folderName + "-ref.txt", rw.getStructuredString());
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Salvo com sucesso.");

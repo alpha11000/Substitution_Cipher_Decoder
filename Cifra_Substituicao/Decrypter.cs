@@ -211,7 +211,6 @@ namespace Cifra_Substituicao
 
                 if (!isValid)
                 {
-                  //  ConsoleUtil.printColoredMessage("OKAY", ConsoleColor.Green);
                     continue;
                 }
 
@@ -229,7 +228,6 @@ namespace Cifra_Substituicao
                 }
 
             }
-            ConsoleUtil.printColoredMessage("INVÁLIDO", ConsoleColor.Red);
             return null;
         }
 

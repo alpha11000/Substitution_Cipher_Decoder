@@ -52,18 +52,13 @@ namespace Cifra_Substituicao
 
             string dict = dicts[choice - 1];
             string totalWordsFileNAme = dict + "/" + currentDictFolder + "-words.txt";
-            string freqDictName = dict + "/_freq/" + currentDictFolder + "-freq.txt";
+            //string freqDictName = dict + "/_freq/" + currentDictFolder + "-freq.txt";
             string refDictName = dict + "/" + currentDictFolder + "-ref.txt";
 
             string[] refDict = FileUtil.openDictFile(refDictName);
 
             if (refDict.Length == 0)
             {
-                if(Directory.GetFiles(dict).Length == 1)
-                {
-                    totalWordsFileNAme = Directory.GetFiles(dict)[0];
-                    ConsoleUtil.printColoredMessage($"Importando a partir de: {totalWordsFileNAme}", ConsoleColor.Yellow);
-                }
 
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Não foi encontrado um dicionário de referências.");
@@ -75,14 +70,39 @@ namespace Cifra_Substituicao
                 //string mostFreqDictName = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
                 //mostFreqDictName += "/_dict/pt-br/_freq/mostFreqMod.txt";
 
-                string[] mostFreqWords = FileUtil.openDictFile(freqDictName);
-                string[] totalWordsFile = FileUtil.openDictFile(totalWordsFileNAme);
+                string[] mostFreqWords;
+                string[] totalWordsFile = mostFreqWords = new string[0];
 
+                string[] dictDirFiles;
+                string[] freqDirFiles = dictDirFiles = new string[0];
 
-                Console.WriteLine("Gerando referencias a partir das palavras mais frequentes...");
-                rw.addVariousReferences(mostFreqWords);
+                try
+                {
+                    freqDirFiles = Directory.GetFiles(dict + "/_freq");
+                }catch (Exception){}
+
+                if(freqDirFiles.Length >= 1)
+                {
+                    mostFreqWords = FileUtil.openDictFile(freqDirFiles[0]);
+                    Console.WriteLine($"Importando dicionário de mais frequentes a partir de:\n{freqDirFiles[0]}");
+                    rw.addVariousReferences(mostFreqWords);
+                }
+
+                try
+                {
+                    dictDirFiles = Directory.GetFiles(dict);
+                }
+                catch (Exception) { }
+
+                if (dictDirFiles.Length >= 1)
+                {
+                    totalWordsFile = FileUtil.openDictFile(dictDirFiles[0]);
+                    Console.WriteLine($"Importando dicionário completo a partir de:\n{dictDirFiles[0]}");
+                    rw.addVariousReferences(totalWordsFile);
+                }
+
                 Console.WriteLine("Gerando referencias a partir do dicionário completo...");
-                rw.addVariousReferences(totalWordsFile);
+                //rw.addVariousReferences(totalWordsFile);
 
                 Console.WriteLine("Gerando dicionário de referências e salvando...");
                 FileUtil.writeToFile(refDictName, rw.getStructuredString());

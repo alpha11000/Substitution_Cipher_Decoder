@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using Dict_Rewrite;
 
@@ -113,16 +112,72 @@ namespace Cifra_Substituicao
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Dicionário de referências encontrado. Importando-o...");
+                ConsoleUtil.printColoredMessage("Dicionário de referências encontrado. Importando-o...", ConsoleColor.Green);
                 Console.ResetColor();
                 
                 rw.setReferencesFromString(refDict);
             }
 
+            int choice2 = 0;
 
-            Console.WriteLine("Digite o caminho para o arquivo que deseja descriptografar. (Ex:  /_testFiles/Caesar/cod6.txt)");
-            string fileTextName = dir +  Console.ReadLine();
+            Console.WriteLine("\nA partir de onde deseja descriptografar?\n\n1- Arquivos de exemplo;\n2- Diretoria do arquivo.");
+
+            while (true)
+            {
+                Console.Write("\nSua escolha: ");
+
+                choice2 = int.Parse(Console.ReadLine());
+
+                if(choice > 2 || choice2 < 1)
+                {
+                    ConsoleUtil.printColoredMessage("\nEscolha inválida.", ConsoleColor.Red);
+                    continue;
+                }
+
+                break;
+
+            }
+
+            string fileTextName = "";
+
+            if (choice2 == 1)
+            {
+                string[] dispExamples = Directory.GetFiles(dir + "/_testFiles");
+
+                Console.WriteLine("\nOs seguintes exemplos estão disponíveis:\n");
+                int i = 0;
+
+                foreach(string dispExample in dispExamples)
+                {
+                    string fileName = dispExample.Substring(dispExample.LastIndexOf("\\") + 1);
+                    i++;
+                    Console.WriteLine(i + "- " + fileName);
+                }
+
+                int choice3;
+
+                while (true)
+                {
+                    Console.Write("\nSua escolha: ");
+                    choice3 = int.Parse(Console.ReadLine());
+
+                    if(choice3 < 1 || choice3 > dispExamples.Length)
+                    {
+                        ConsoleUtil.printColoredMessage("Escolha inválida: ", ConsoleColor.Red);
+                        continue;
+                    }
+
+                    fileTextName = dispExamples[choice3 - 1];
+                    break;
+
+                }
+            }
+            else
+            {
+                Console.WriteLine("\nDigite o caminho para o arquivo que deseja descriptografar:");
+                fileTextName = Console.ReadLine();
+            }
+
 
             string[] fileText = FileUtil.openTextFile(fileTextName);
 
